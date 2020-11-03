@@ -1,0 +1,143 @@
+
+To do list
+- char linkname[100] to header;           
+
+functions:
+chmod
+close|(2)
+fstat(2)
+getpwuid -- take user name
+getgrgid -- take group name
+getxattr -- retrieve an extended attribute value
+listxattr - list extended attribute names
+lseek(2)
+major ----- manage a device number
+minor ----- take device ID
+mkdir(2)
+open(2)
+opendir
+read(2)
+readdir
+readlink
+symlink
+unlink(2)
+time
+ctime
+utime
+
+==================================================================================
+WHAT HEADER OF TAR MEANS
+==================================================================================
+/www.mkssoftware.com/docs/man4/tar.4.asp
+hexdump -C
+We have a file_1.txt in test_tar.tar
+his header is:
+file_1.txt0000644000175000017500000000003013676457322012242 0ustar  docodedocode text_inside
+file_1.txt0000644 0001750 0001750 00000000030 13676457322 012242 0 ustar  docodedocodeMy text in this file.
+          |access/permission (644)|                              |typeflag|
+                     |1750 (octal) this is 1000 in 10|             |magic|
+                                              |mtime|     |chksum|        |user name|
+                                                                                |group name|
+                                           |size octal|                     
+
+00000000  66 69 6c 65 5f 31 2e 74  78 74 00 00 00 00 00 00  |file_1.txt......|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+* 
+00000060  00 00 00 00 30 30 30 30  36 34 34 00 30 30 30 31  |....0000644.0001|
+00000070  37 35 30 00 30 30 30 31  37 35 30 00 30 30 30 30  |750.0001750.0000|
+00000080  30 30 30 30 30 33 30 00  31 33 36 37 36 34 35 37  |0000030.13676457|
+00000090  33 32 32 00 30 31 32 32  34 32 00 20 30 00 00 00  |322.012242. 0...| space after checksum and before typeflag
+000000a0  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+*
+00000100  00 75 73 74 61 72 20 20  00 64 6f 63 6f 64 65 00  |.ustar  .docode.| 2 spaces before group name
+00000110  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000120  00 00 00 00 00 00 00 00  00 64 6f 63 6f 64 65 00  |.........docode.|
+00000130  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+*
+00000200  0a 0a 0a 4d 79 20 74 65  78 74 20 69 6e 20 74 68  |...My text in th|
+00000210  69 73 20 66 69 6c 65 2e  00 00 00 00 00 00 00 00  |is file.........|
+00000220  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+*
+00002800
+
+==================================================================================
+ОПЦИИ И ИХ ЗНАЧЕНИЕ
+==================================================================================
+
+СОЗДАНИЕ АРХИВА
+-с (работает только в паре с f) название_архива что_перемещаем_туда
+>>>>> Создание архива. Если вызывать повторно и в файле tar что-то уже есть - заменяет все на новые файлы, которые добавили,
+старое исчезает
+test case: 
+    tar -cf test_tar.tar Makefile main.c
+
+-r (работает только в паре с f) название_архива что_перемещаем_туда
+>>>>> Если в архиве уже есть файлы, котороые мы добавляем, то добавляет их "снизу" - НЕ заменяем. Даже
+если такой файл уже встречался
+test case:
+    tar -rf test_tar.tar Makefile main.c get_opt.c
+
+-u Like -r, but new entries are added only if they have a modification date newer than
+the corresponding entry in the archive. The -f option is required.
+>>>>> Если файл уже есть в архиве, добавляем его только в том случае, если изменена дата модификации 
+
+ВЫВОД НАЗВАНИЙ ФАЙЛОВ, КОТОРЫЕ ЛЕЖАТ ВНУТРИ АРХИВА, ЕСЛИ ОН СУЩЕСТВУЕТ
+-t работает только в паре с f например -tf или -t -f, НО не -ft
+>>>>> Выводит в консоль список файлов внутри
+Алгоритм: взять информацию о файле из структуры header->name;
+test case: 
+todo:
+- добавить проверку на наличие архива
+    tar -tf test_tar.tar
+-- если нет такого архива:
+tar: test_tar.tar: Cannot open: No such file or directory
+tar: Error is not recoverable: exiting now
+-- если архив плохой:
+tar: This does not look like a tar archive
+tar: Skipping to next header
+tar: Exiting with failure status due to previous errors
+>>>>> если есть архив, то выводит список файлов внутри него
+    tar -ft test_tar.tar
+А ЭТОТ кейс не работает:
+tar: You must specify one of the '-Acdtrux', '--delete' or '--test-label' options
+Try 'tar --help' or 'tar --usage' for more information.
+
+РАЗАРХИВИРОВАНИЕ
+-x работает только в паре с f
+>>>>> Разархивирует (extraction), то есть в директории появляются все файлы из архива, при этом архив никуда не уходит. 
+Если вызвать второй раз, то файлы, которые уже есть - заменяются.
+Если такой файл ужеб в принципе, существует в директории куда разархивируется архив, то он заменяется. 
+test case: 
+
+==========================================
+РАЗДЕЛЕНИЕ
+==========================================
+
+You could split it by flags. But you may have noticed there's four big chunks in my_tar:
+- The option processing // 
+- The creation/appending of the archive // опции -с -r -u
+- The listing // option -t
+- The extraction // разархивирование -x
+
+
+//main.c0000644000175000017500000000136013701154470011424 0ustar  docodedocode#include "my_tar.h"
+/*
+all number in hex 
+00000000  6d 61 69 6e 2e 63 00 00  00 00 00 00 00 00 00 00  |main.c..........|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+*
+00000060  00 00 00 00 30 30 30 30  36 34 34 00 30 30 30 31  |....0000644.0001|
+00000070  37 35 30 00 30 30 30 31  37 35 30 00 30 30 30 30  |750.0001750.0000|
+00000080  30 30 30 31 33 36 30 00  31 33 37 30 31 31 35 34  |0001360.13701154|
+00000090  34 37 30 00 30 31 31 34  32 34 00 20 30 00 00 00  |470.011424. 0...| space on 9b (155) (inside chksum block)
+000000a0  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+*
+00000100  00 75 73 74 61 72 20 20  00 64 6f 63 6f 64 65 00  |.ustar  .docode.| space on 106 and 107 (262 and 263)
+00000110  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000120  00 00 00 00 00 00 00 00  00 64 6f 63 6f 64 65 00  |.........docode.|
+00000130  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+*
+00000200  23 69 6e 63 6c 75 64 65  20 22 6d 79 5f 74 61 72  |#include "my_tar|
+00000210  2e 68 22 0a 0a 69 6e 74  20 65 72 72 6f 72 28 63  |.h"..int error(c|
+*
+*/
