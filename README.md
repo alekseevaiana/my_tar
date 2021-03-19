@@ -1,13 +1,15 @@
 # my_tar
 
+## Description
 
-my_tar is a command to manipulate tape archive.  
+my_tar is a command to manipulate tape archive.   
+You can create tar archive with different options (-c, -r, -u), and you can view archieve's content
 
-
+## Run Instructions
 to run inside my_archive folder:  
         `make`  
 
-
+## Test instructions
 -c  
 Create a new archive containing the example items:  
         `./my_tar -cf test_archive.tar list_archive.c conversion.c`  
